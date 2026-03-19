@@ -17,7 +17,6 @@ import {
   TrendingUp,
   Package,
   X,
-  Zap,
   Layers,
   SlidersHorizontal,
   Monitor,
@@ -200,10 +199,21 @@ function formatNumber(n: number) {
   return n.toString();
 }
 
-function getLastCopiedProduct(): Product | null {
-  const id = localStorage.getItem("lastCopiedProductId");
-  if (!id) return null;
-  return MOCK_PRODUCTS.find((p) => p.id === id) || null;
+function getRecentlyCopiedProducts(): Product[] {
+  try {
+    const ids: string[] = JSON.parse(localStorage.getItem("recentlyCopiedIds") || "[]");
+    return ids.map((id) => MOCK_PRODUCTS.find((p) => p.id === id)).filter(Boolean) as Product[];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentlyCopied(product: Product) {
+  try {
+    const ids: string[] = JSON.parse(localStorage.getItem("recentlyCopiedIds") || "[]");
+    const updated = [product.id, ...ids.filter((id) => id !== product.id)].slice(0, 5);
+    localStorage.setItem("recentlyCopiedIds", JSON.stringify(updated));
+  } catch { /* noop */ }
 }
 
 /* ────────────────────── App ────────────────────── */
@@ -216,7 +226,7 @@ function App() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
-  const [lastCopied, setLastCopied] = useState<Product | null>(getLastCopiedProduct);
+  const [recentlyCopied, setRecentlyCopied] = useState<Product[]>(getRecentlyCopiedProducts);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
   // Determine effective mobile state: actual mobile OR user toggled to mobile preview
@@ -242,8 +252,8 @@ function App() {
     try {
       await navigator.clipboard.writeText(product.affiliateLink);
       setCopiedId(product.id);
-      setLastCopied(product);
-      localStorage.setItem("lastCopiedProductId", product.id);
+      saveRecentlyCopied(product);
+      setRecentlyCopied(getRecentlyCopiedProducts());
       toast.success("Link copied!", { description: `${product.brand} · ${product.name}` });
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
@@ -279,28 +289,41 @@ function App() {
     }
   }, [showCollectionDropdown]);
 
-  /* ────── Quick Copy Banner ────── */
-  const QuickCopyBanner = () => {
-    if (!lastCopied) return null;
+  /* ────── Recently Copied ────── */
+  const RecentlyCopiedSection = () => {
+    if (recentlyCopied.length === 0) return null;
     return (
-      <div className="relative overflow-hidden border-b border-primary/10 bg-gradient-to-r from-primary/8 via-accent/40 to-accent/10">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5 sm:px-6">
-          <div className="flex items-center gap-2 text-xs text-accent-foreground">
-            <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium">Quick copy</span>
+      <div className="border-b border-border/30 bg-secondary/30">
+        <div className={`mx-auto px-4 py-3 ${showMobile ? "" : "max-w-5xl sm:px-6"}`}>
+          <div className="mb-2 flex items-center gap-1.5">
+            <Clock className="h-3 w-3 text-muted-foreground/60" />
+            <span className="text-[10px] font-semibold tracking-widest text-muted-foreground/60 uppercase">Recently copied</span>
           </div>
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="truncate text-xs font-medium text-foreground">
-              {lastCopied.brand} · {lastCopied.name}
-            </span>
+          <div className="flex gap-2 overflow-x-auto scrollbar-none">
+            {recentlyCopied.map((product) => (
+              <button
+                key={product.id}
+                onClick={() => handleCopy(product)}
+                className={`group/chip flex shrink-0 items-center gap-2 rounded-full border bg-card py-1.5 pl-1.5 pr-3.5 transition-all active:scale-95 ${
+                  copiedId === product.id
+                    ? "border-chart-2/30 bg-chart-2/5"
+                    : "border-border/50 hover:border-primary/25 hover:bg-accent/40"
+                }`}
+              >
+                <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-secondary">
+                  <img src={product.image} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+                <span className={`whitespace-nowrap text-xs font-medium ${
+                  copiedId === product.id ? "text-chart-2" : "text-foreground"
+                }`}>
+                  {product.name}
+                </span>
+                {copiedId === product.id && (
+                  <Check className="h-3 w-3 shrink-0 text-chart-2" />
+                )}
+              </button>
+            ))}
           </div>
-          <button
-            onClick={() => handleCopy(lastCopied)}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-all hover:bg-primary/85 active:scale-95"
-          >
-            <Copy className="h-3 w-3" />
-            Copy again
-          </button>
         </div>
       </div>
     );
@@ -533,8 +556,8 @@ function App() {
         )}
 
         <div className={showMobile && !isMobile ? "flex flex-1 flex-col overflow-y-auto" : "flex flex-1 flex-col"}>
-          {/* Quick Copy Banner */}
-          <QuickCopyBanner />
+          {/* Recently Copied */}
+          <RecentlyCopiedSection />
 
           {/* Header */}
           <header className="sticky top-0 z-20 border-b border-border/30 bg-background/80" style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
