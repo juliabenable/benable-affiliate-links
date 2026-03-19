@@ -283,9 +283,9 @@ function App() {
   const QuickCopyBanner = () => {
     if (!lastCopied) return null;
     return (
-      <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-r from-accent/60 via-accent/30 to-background">
+      <div className="relative overflow-hidden border-b border-primary/10 bg-gradient-to-r from-primary/8 via-accent/40 to-accent/10">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5 sm:px-6">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-accent-foreground">
             <Zap className="h-3.5 w-3.5 text-primary" />
             <span className="font-medium">Quick copy</span>
           </div>
@@ -296,7 +296,7 @@ function App() {
           </div>
           <button
             onClick={() => handleCopy(lastCopied)}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-[11px] font-semibold text-background transition-all hover:opacity-80 active:scale-95"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-all hover:bg-primary/85 active:scale-95"
           >
             <Copy className="h-3 w-3" />
             Copy again
@@ -310,14 +310,13 @@ function App() {
   const StatsRow = () => (
     <div className={`grid gap-2 ${showMobile ? "grid-cols-3" : "grid-cols-3"}`}>
       {[
-        { label: "Products", value: filteredProducts.length.toString(), icon: Package, color: "text-primary" },
-        { label: "Total clicks", value: formatNumber(totalClicks), icon: TrendingUp, color: "text-chart-2" },
-        { label: "Earned", value: formatCurrency(totalEarned), icon: Sparkles, color: "text-chart-4" },
+        { label: "Products", value: filteredProducts.length.toString(), icon: Package, color: "text-primary", bg: "bg-primary/8" },
+        { label: "Total clicks", value: formatNumber(totalClicks), icon: TrendingUp, color: "text-chart-2", bg: "bg-chart-2/8" },
+        { label: "Earned", value: formatCurrency(totalEarned), icon: Sparkles, color: "text-chart-4", bg: "bg-chart-4/8" },
       ].map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col gap-1 rounded-2xl border border-border/50 bg-card p-3 sm:p-4"
-          style={{ backdropFilter: "blur(20px)" }}
+          className={`flex flex-col gap-1.5 rounded-2xl border border-border/40 p-3 sm:p-4 ${stat.bg}`}
         >
           <div className="flex items-center gap-1.5">
             <stat.icon className={`h-3.5 w-3.5 ${stat.color}`} />
@@ -332,8 +331,7 @@ function App() {
   /* ────── Product Card (Grid) ────── */
   const ProductCardGrid = ({ product }: { product: Product }) => (
     <div
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-300 hover:border-border hover:shadow-lg"
-      style={{ backdropFilter: "blur(20px)" }}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
     >
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-secondary">
@@ -348,14 +346,18 @@ function App() {
           <div className="flex w-full gap-2 p-3">
             <button
               onClick={() => handleCopy(product)}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-foreground backdrop-blur-sm transition-all hover:bg-white active:scale-95"
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold backdrop-blur-sm transition-all active:scale-95 ${
+                copiedId === product.id
+                  ? "bg-chart-2 text-white"
+                  : "bg-primary text-white hover:bg-primary/90"
+              }`}
             >
-              {copiedId === product.id ? <Check className="h-3.5 w-3.5 text-chart-2" /> : <Copy className="h-3.5 w-3.5" />}
-              {copiedId === product.id ? "Copied" : "Copy link"}
+              {copiedId === product.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedId === product.id ? "Copied!" : "Copy link"}
             </button>
             <button
               onClick={() => handleShare(product)}
-              className="flex items-center justify-center rounded-xl bg-white/95 p-2 backdrop-blur-sm transition-all hover:bg-white active:scale-95"
+              className="flex items-center justify-center rounded-full bg-white/90 p-2 backdrop-blur-sm transition-all hover:bg-white active:scale-95"
             >
               <Share2 className="h-3.5 w-3.5 text-foreground" />
             </button>
@@ -363,14 +365,14 @@ function App() {
         </div>
         {/* Commission badge */}
         <div className="absolute right-2 top-2">
-          <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-foreground backdrop-blur-sm">
+          <span className="rounded-full bg-primary/90 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm shadow-sm">
             {product.commission}
           </span>
         </div>
       </div>
       {/* Info */}
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{product.brand}</span>
+        <span className="text-[11px] font-medium tracking-wide text-primary/70 uppercase">{product.brand}</span>
         <span className="line-clamp-1 text-sm font-semibold text-foreground">{product.name}</span>
         <span className="line-clamp-1 text-xs text-muted-foreground">{product.note}</span>
         {/* Metrics */}
@@ -389,8 +391,7 @@ function App() {
   /* ────── Product Card (List) ────── */
   const ProductCardList = ({ product }: { product: Product }) => (
     <div
-      className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-3 transition-all duration-200 hover:border-border hover:shadow-md sm:gap-4 sm:p-4"
-      style={{ backdropFilter: "blur(20px)" }}
+      className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-3 transition-all duration-200 hover:border-primary/20 hover:bg-accent/30 sm:gap-4 sm:p-4"
     >
       {/* Image */}
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-secondary sm:h-16 sm:w-16">
@@ -400,8 +401,8 @@ function App() {
       {/* Info */}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{product.brand}</span>
-          <span className="rounded-full bg-chart-2/10 px-1.5 py-0.5 text-[10px] font-bold text-chart-2">{product.commission}</span>
+          <span className="text-[11px] font-medium tracking-wide text-primary/70 uppercase">{product.brand}</span>
+          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">{product.commission}</span>
         </div>
         <span className="truncate text-sm font-semibold text-foreground">{product.name}</span>
         <span className="truncate text-xs text-muted-foreground">{product.note}</span>
@@ -425,20 +426,20 @@ function App() {
       <div className="flex shrink-0 items-center gap-1.5">
         <button
           onClick={() => handleShare(product)}
-          className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         >
           <Share2 className="h-4 w-4" />
         </button>
         <button
           onClick={() => handleCopy(product)}
-          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all active:scale-95 ${
+          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all active:scale-95 ${
             copiedId === product.id
               ? "bg-chart-2 text-white"
-              : "bg-foreground text-background hover:opacity-80"
+              : "bg-primary text-white hover:bg-primary/85 shadow-sm"
           }`}
         >
           {copiedId === product.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copiedId === product.id ? "Copied" : "Copy"}
+          {copiedId === product.id ? "Copied!" : "Copy"}
         </button>
       </div>
     </div>
@@ -447,7 +448,7 @@ function App() {
   /* ────── Mobile Product Card ────── */
   const MobileProductCard = ({ product }: { product: Product }) => (
     <div
-      className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-3 transition-all duration-200 active:scale-[0.98]"
+      className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-3 transition-all duration-200 active:scale-[0.98] active:bg-accent/30"
       onClick={() => handleCopy(product)}
     >
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-secondary">
@@ -456,9 +457,9 @@ function App() {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-1.5">
           <span className="truncate text-sm font-semibold text-foreground">{product.name}</span>
-          <span className="rounded-full bg-chart-2/10 px-1.5 py-0.5 text-[9px] font-bold text-chart-2">{product.commission}</span>
+          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">{product.commission}</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">{product.brand}</span>
+        <span className="text-[11px] text-primary/60">{product.brand}</span>
         <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
           <span>{formatNumber(product.clicks)} clicks</span>
           <span>·</span>
@@ -467,11 +468,11 @@ function App() {
       </div>
       <div className="flex shrink-0 items-center">
         {copiedId === product.id ? (
-          <div className="rounded-xl bg-chart-2 p-2">
+          <div className="rounded-full bg-chart-2 p-2 shadow-sm">
             <Check className="h-4 w-4 text-white" />
           </div>
         ) : (
-          <div className="rounded-xl bg-secondary p-2 transition-colors group-hover:bg-primary group-hover:text-white">
+          <div className="rounded-full bg-primary/10 p-2 text-primary transition-colors">
             <Copy className="h-4 w-4" />
           </div>
         )}
@@ -501,16 +502,16 @@ function App() {
 
       {/* Device toggle (only on desktop) */}
       {!isMobile && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-1 rounded-2xl border border-border/50 bg-card p-1 shadow-lg" style={{ backdropFilter: "blur(20px)" }}>
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-1 rounded-full border border-primary/20 bg-card p-1 shadow-lg shadow-primary/10" style={{ backdropFilter: "blur(20px)" }}>
           <button
             onClick={() => setPreviewMode("desktop")}
-            className={`rounded-xl p-2.5 transition-all ${previewMode === "desktop" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+            className={`rounded-full p-2.5 transition-all ${previewMode === "desktop" ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-primary"}`}
           >
             <Monitor className="h-4 w-4" />
           </button>
           <button
             onClick={() => setPreviewMode("mobile")}
-            className={`rounded-xl p-2.5 transition-all ${previewMode === "mobile" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+            className={`rounded-full p-2.5 transition-all ${previewMode === "mobile" ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-primary"}`}
           >
             <Smartphone className="h-4 w-4" />
           </button>
@@ -521,14 +522,14 @@ function App() {
       <div
         className={
           showMobile && !isMobile
-            ? "relative flex w-[390px] flex-col overflow-hidden rounded-[3rem] border-[8px] border-foreground/10 bg-background shadow-2xl"
+            ? "relative flex w-[390px] flex-col overflow-hidden rounded-[3rem] border-[8px] border-primary/15 bg-background shadow-2xl shadow-primary/10"
             : "flex w-full flex-1 flex-col"
         }
         style={showMobile && !isMobile ? { height: "844px", minHeight: "844px" } : undefined}
       >
         {/* Phone notch */}
         {showMobile && !isMobile && (
-          <div className="absolute left-1/2 top-0 z-50 h-7 w-36 -translate-x-1/2 rounded-b-2xl bg-foreground/10" />
+          <div className="absolute left-1/2 top-0 z-50 h-7 w-36 -translate-x-1/2 rounded-b-2xl bg-primary/15" />
         )}
 
         <div className={showMobile && !isMobile ? "flex flex-1 flex-col overflow-y-auto" : "flex flex-1 flex-col"}>
@@ -552,16 +553,16 @@ function App() {
                 <div className="flex items-center gap-2">
                   {/* View toggle (only on desktop) */}
                   {!showMobile && (
-                    <div className="flex items-center gap-0.5 rounded-xl border border-border/50 p-0.5">
+                    <div className="flex items-center gap-0.5 rounded-full border border-border/50 bg-secondary/50 p-0.5">
                       <button
                         onClick={() => setViewMode("list")}
-                        className={`rounded-lg p-1.5 transition-all ${viewMode === "list" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+                        className={`rounded-full p-1.5 transition-all ${viewMode === "list" ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                       >
                         <List className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setViewMode("grid")}
-                        className={`rounded-lg p-1.5 transition-all ${viewMode === "grid" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+                        className={`rounded-full p-1.5 transition-all ${viewMode === "grid" ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                       >
                         <LayoutGrid className="h-3.5 w-3.5" />
                       </button>
@@ -578,7 +579,7 @@ function App() {
                     placeholder="Search products, brands..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="h-10 rounded-xl border-border/50 bg-secondary/50 pl-9 text-sm transition-colors focus:bg-background"
+                    className="h-10 rounded-full border-border/50 bg-secondary/50 pl-9 text-sm transition-colors focus:border-primary/30 focus:bg-background focus:ring-2 focus:ring-primary/10"
                   />
                   {search && (
                     <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -594,7 +595,7 @@ function App() {
                       e.stopPropagation();
                       setShowCollectionDropdown(!showCollectionDropdown);
                     }}
-                    className="inline-flex h-10 w-full items-center gap-2 rounded-xl border border-border/50 bg-secondary/50 px-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary sm:w-auto"
+                    className="inline-flex h-10 w-full items-center gap-2 rounded-full border border-border/50 bg-secondary/50 px-4 text-sm font-medium text-foreground transition-colors hover:border-primary/30 hover:bg-accent/30 sm:w-auto"
                   >
                     <Layers className="h-3.5 w-3.5 text-muted-foreground" />
                     <span className="truncate">{activeCollection === "All Collections" ? "Collection" : activeCollection}</span>
@@ -636,8 +637,8 @@ function App() {
                     onClick={() => setActiveCategory(cat)}
                     className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
                       activeCategory === cat
-                        ? "bg-foreground text-background"
-                        : "bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        ? "bg-primary text-white shadow-sm"
+                        : "border border-border/50 bg-background text-muted-foreground hover:border-primary/30 hover:text-foreground"
                     }`}
                   >
                     {cat}
@@ -659,19 +660,19 @@ function App() {
               <div className="mb-3 flex flex-wrap items-center gap-1.5">
                 <SlidersHorizontal className="h-3 w-3 text-muted-foreground" />
                 {activeCategory !== "All" && (
-                  <Badge variant="secondary" className="gap-1 rounded-lg text-[11px]">
+                  <Badge variant="secondary" className="gap-1 rounded-full border-primary/15 bg-accent text-accent-foreground text-[11px]">
                     {activeCategory}
                     <button onClick={() => setActiveCategory("All")}><X className="h-3 w-3" /></button>
                   </Badge>
                 )}
                 {activeCollection !== "All Collections" && (
-                  <Badge variant="secondary" className="gap-1 rounded-lg text-[11px]">
+                  <Badge variant="secondary" className="gap-1 rounded-full border-primary/15 bg-accent text-accent-foreground text-[11px]">
                     {activeCollection}
                     <button onClick={() => setActiveCollection("All Collections")}><X className="h-3 w-3" /></button>
                   </Badge>
                 )}
                 {search && (
-                  <Badge variant="secondary" className="gap-1 rounded-lg text-[11px]">
+                  <Badge variant="secondary" className="gap-1 rounded-full border-primary/15 bg-accent text-accent-foreground text-[11px]">
                     "{search}"
                     <button onClick={() => setSearch("")}><X className="h-3 w-3" /></button>
                   </Badge>
@@ -695,7 +696,7 @@ function App() {
                     setActiveCategory("All");
                     setActiveCollection("All Collections");
                   }}
-                  className="mt-2 rounded-xl bg-foreground px-4 py-2 text-xs font-semibold text-background transition-all hover:opacity-80 active:scale-95"
+                  className="mt-2 rounded-full bg-primary px-5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary/85 active:scale-95"
                 >
                   Clear all filters
                 </button>
